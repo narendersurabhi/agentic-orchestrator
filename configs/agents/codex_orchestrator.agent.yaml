@@ -1,0 +1,18 @@
+name: codex_orchestrator
+role: orchestrator
+models:
+  primary:
+    provider: openai
+    name: gpt-5-2025-08-07
+    temperature: 0.2
+    max_output_tokens: 3000
+risk_gate: 0.6
+budgets:
+  tokens_per_job: 120000
+  tokens_per_node: 8000
+rbac:
+  allow_tools: [vector_search, policy_check, s3_fetch, db_query]
+  allow_domains: ["docs.company.com","github.com"]
+termination:
+  allowed: [DONE, FAILED, SPLIT, ESCALATE]
+  must_emit: completion_signal

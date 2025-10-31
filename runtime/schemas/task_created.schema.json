@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TaskCreatedPayload",
+  "type": "object",
+  "required": [
+    "task_id",
+    "type",
+    "inputs_ref",
+    "deps"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "inputs_ref": {
+      "type": "string"
+    },
+    "deps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "eligibility": {
+      "type": "object",
+      "properties": {
+        "capability_key": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PlanCompletedPayload",
+  "type": "object",
+  "required": [
+    "final_outputs_ref",
+    "metrics"
+  ],
+  "properties": {
+    "final_outputs_ref": {
+      "type": "string"
+    },
+    "metrics": {
+      "type": "object"
+    }
+  }
+}

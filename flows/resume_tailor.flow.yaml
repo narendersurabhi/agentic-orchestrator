@@ -1,0 +1,14 @@
+flow: resume_tailor
+nodes:
+  - id: retriever
+    type: task
+  - id: vs
+    type: tool
+    tool: vector_search
+    input_from: retriever
+  - id: draft
+    type: task
+    input_from: vs
+  - id: finish
+    type: task
+    input_from: draft

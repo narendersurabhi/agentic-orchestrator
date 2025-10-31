@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PlanCreatedPayload",
+  "type": "object",
+  "required": [
+    "graph",
+    "constraints"
+  ],
+  "properties": {
+    "graph": {
+      "type": "object",
+      "required": [
+        "nodes",
+        "edges"
+      ],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "kind"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "task",
+                  "tool"
+                ]
+              },
+              "type": {
+                "type": "string"
+              },
+              "tool": {
+                "type": "string"
+              },
+              "deps": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "max_depth": {
+          "type": "integer"
+        },
+        "max_width": {
+          "type": "integer"
+        },
+        "budget_tokens": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

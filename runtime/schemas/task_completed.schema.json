@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TaskCompletedPayload",
+  "type": "object",
+  "required": [
+    "task_id",
+    "outputs_ref",
+    "metrics",
+    "risk"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "outputs_ref": {
+      "type": "string"
+    },
+    "metrics": {
+      "type": "object"
+    },
+    "risk": {
+      "type": "number"
+    }
+  }
+}

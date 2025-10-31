@@ -1,0 +1,4 @@
+name: tailor
+role: draft
+rbac:
+  allow_tools: [vector_search, render_doc]

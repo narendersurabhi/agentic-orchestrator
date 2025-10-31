@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ToolRequestedPayload",
+  "type": "object",
+  "required": [
+    "task_id",
+    "tool_call_id",
+    "tool",
+    "inputs_ref",
+    "deps",
+    "continuation"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "tool_call_id": {
+      "type": "string"
+    },
+    "tool": {
+      "type": "string"
+    },
+    "inputs_ref": {
+      "type": "string"
+    },
+    "deps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "continuation": {
+      "type": "string"
+    }
+  }
+}

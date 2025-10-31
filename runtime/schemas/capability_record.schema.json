@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CapabilityRecord",
+  "type": "object",
+  "required": [
+    "kind",
+    "name",
+    "version",
+    "constraints",
+    "health",
+    "rbac_profile"
+  ],
+  "properties": {
+    "kind": {
+      "enum": [
+        "agent",
+        "tool"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "task_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "modalities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "max_tokens": {
+          "type": "integer"
+        },
+        "max_latency_ms": {
+          "type": "integer"
+        },
+        "max_payload_bytes": {
+          "type": "integer"
+        }
+      }
+    },
+    "concurrency": {
+      "type": "object",
+      "properties": {
+        "soft": {
+          "type": "integer"
+        },
+        "hard": {
+          "type": "integer"
+        }
+      }
+    },
+    "cost_class": {
+      "enum": [
+        "low",
+        "med",
+        "high"
+      ]
+    },
+    "trust_score": {
+      "type": "number"
+    },
+    "rbac_profile": {
+      "type": "string"
+    },
+    "allow_domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allow_resources": {
+      "type": "object"
+    },
+    "health": {
+      "type": "object",
+      "required": [
+        "status",
+        "last_heartbeat"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "healthy",
+            "degraded",
+            "down"
+          ]
+        },
+        "last_heartbeat": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "error_rate": {
+          "type": "number"
+        },
+        "p95_ms": {
+          "type": "integer"
+        }
+      }
+    },
+    "owner": {
+      "type": "object"
+    },
+    "deployment": {
+      "type": "object"
+    },
+    "annotations": {
+      "type": "object"
+    },
+    "is_default": {
+      "type": "boolean"
+    }
+  }
+}

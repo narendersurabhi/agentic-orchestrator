@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EventEnvelope",
+  "type": "object",
+  "required": [
+    "version",
+    "type",
+    "event_id",
+    "occurred_at",
+    "tenant_id",
+    "plan_id",
+    "payload"
+  ],
+  "properties": {
+    "version": {
+      "const": "1"
+    },
+    "type": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tenant_id": {
+      "type": "string"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "headers": {
+      "type": "object"
+    },
+    "payload": {
+      "type": "object"
+    }
+  }
+}

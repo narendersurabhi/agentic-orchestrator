@@ -1,0 +1,10 @@
+boto3
+pydantic-core
+fastjsonschema
+confluent-kafka
+confluent-kafka[avro]
+requests
+tenacity
+uvicorn
+fastapi
+python-dotenv
