@@ -1,39 +1,74 @@
-import os, json, time
-from confluent_kafka import Consumer, Producer
-from dotenv import load_dotenv
-load_dotenv()
-ENV = os.environ.get
+import json
+import time
 
-consumer = Consumer({
-    'bootstrap.servers': ENV('KAFKA_BOOTSTRAP'),
-    'group.id': 'tools.vector_search',
-    'security.protocol': ENV('KAFKA_SECURITY_PROTOCOL','SASL_SSL'),
-    'sasl.mechanisms': ENV('KAFKA_SASL_MECHANISM','PLAIN'),
-    'sasl.username': ENV('KAFKA_SASL_USERNAME'),
-    'sasl.password': ENV('KAFKA_SASL_PASSWORD'),
-    'auto.offset.reset': 'earliest'
-})
-producer = Producer({'bootstrap.servers': ENV('KAFKA_BOOTSTRAP'),
-                     'security.protocol': ENV('KAFKA_SECURITY_PROTOCOL','SASL_SSL'),
-                     'sasl.mechanisms': ENV('KAFKA_SASL_MECHANISM','PLAIN'),
-                     'sasl.username': ENV('KAFKA_SASL_USERNAME'),
-                     'sasl.password': ENV('KAFKA_SASL_PASSWORD')})
+from runtime.common import (
+    Settings,
+    configure_logging,
+    create_consumer,
+    create_producer,
+    get_logger,
+)
 
-consumer.subscribe(['tool.events'])
-while True:
-    m = consumer.poll(0.2)
-    if not m: continue
-    if m.error(): continue
-    evt = json.loads(m.value())
-    if evt.get('type') == 'ToolRequested' and evt['payload'].get('tool') == 'vector_search':
-        # Simulate work
+logger = get_logger(__name__)
+
+
+def handle_event(event: dict, producer) -> None:
+    if (
+        event.get("type") == "ToolRequested"
+        and event.get("payload", {}).get("tool") == "vector_search"
+    ):
         time.sleep(0.5)
         out = {
-          "version":"1","type":"ToolCompleted","event_id":evt['event_id']+'c',
-          "occurred_at":evt['occurred_at'],"tenant_id":evt['tenant_id'],"plan_id":evt['plan_id'],
-          "payload":{"task_id":evt['payload']['task_id'],"tool_call_id":evt['payload']['tool_call_id'],
-                     "outputs_ref":"s3://outputs/vs_out.json","metrics":{"lat_ms":500}}
+            "version": "1",
+            "type": "ToolCompleted",
+            "event_id": f"{event['event_id']}c",
+            "occurred_at": event["occurred_at"],
+            "tenant_id": event["tenant_id"],
+            "plan_id": event["plan_id"],
+            "payload": {
+                "task_id": event["payload"]["task_id"],
+                "tool_call_id": event["payload"]["tool_call_id"],
+                "outputs_ref": "s3://outputs/vs_out.json",
+                "metrics": {"lat_ms": 500},
+            },
         }
-        producer.produce('tool.events', key=evt['plan_id'], value=json.dumps(out).encode('utf-8'))
+        producer.produce(
+            "tool.events", key=event["plan_id"], value=json.dumps(out).encode("utf-8")
+        )
         producer.flush()
-    consumer.commit(m)
+        logger.info("Tool completed", extra={"task_id": event["payload"]["task_id"]})
+
+
+def run() -> None:
+    settings = Settings.from_env()
+    settings.validate()
+    configure_logging(settings.service_name, settings.log_level)
+
+    consumer = create_consumer(settings, "tools.vector_search", ["tool.events"])
+    producer = create_producer(settings)
+
+    logger.info("Vector search worker started")
+    try:
+        while True:
+            msg = consumer.poll(0.2)
+            if not msg:
+                continue
+            if msg.error():
+                logger.error("Kafka error: %s", msg.error())
+                continue
+            payload = msg.value()
+            if payload is None:
+                logger.warning("Received empty message payload")
+                continue
+            event = json.loads(payload)
+            handle_event(event, producer)
+            consumer.commit(msg)
+    except KeyboardInterrupt:
+        logger.info("Vector search worker shutting down")
+    finally:
+        producer.flush(5)
+        consumer.close()
+
+
+if __name__ == "__main__":
+    run()
