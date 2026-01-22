@@ -10,6 +10,10 @@ Streaming-first, event-sourced multi-agent orchestration on **Confluent Cloud**.
 ## Configure
 Copy `.env.example` to `.env` and set Confluent Cloud and AWS variables.
 
+### Observability
+- `LOG_LEVEL` controls runtime log verbosity (default: `INFO`).
+- `SERVICE_NAME` labels log output for multi-service deployments.
+
 ## Quick start
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
@@ -28,4 +32,10 @@ python runtime/coordinators/plan_coordinator.py
 python runtime/coordinators/result_router.py
 python runtime/agents/planner.py
 python runtime/tools/vector_search_worker.py
+```
+
+## Tests
+```bash
+pip install -r runtime/requirements-dev.txt
+pytest
 ```

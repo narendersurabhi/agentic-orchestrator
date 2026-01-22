@@ -1,29 +1,52 @@
-import os, json
-from confluent_kafka import Consumer, Producer
-from dotenv import load_dotenv
-load_dotenv()
-ENV = os.environ.get
-consumer = Consumer({
-    'bootstrap.servers': ENV('KAFKA_BOOTSTRAP'),
-    'group.id': 'result-router',
-    'security.protocol': ENV('KAFKA_SECURITY_PROTOCOL','SASL_SSL'),
-    'sasl.mechanisms': ENV('KAFKA_SASL_MECHANISM','PLAIN'),
-    'sasl.username': ENV('KAFKA_SASL_USERNAME'),
-    'sasl.password': ENV('KAFKA_SASL_PASSWORD'),
-    'auto.offset.reset': 'earliest'
-})
-producer = Producer({'bootstrap.servers': ENV('KAFKA_BOOTSTRAP'),
-                     'security.protocol': ENV('KAFKA_SECURITY_PROTOCOL','SASL_SSL'),
-                     'sasl.mechanisms': ENV('KAFKA_SASL_MECHANISM','PLAIN'),
-                     'sasl.username': ENV('KAFKA_SASL_USERNAME'),
-                     'sasl.password': ENV('KAFKA_SASL_PASSWORD')})
-consumer.subscribe(['tool.events'])
-while True:
-    m = consumer.poll(0.2)
-    if not m: continue
-    if m.error(): continue
-    evt = json.loads(m.value())
-    if evt.get('type') == 'ToolCompleted':
-        # TODO: look up ContinuationStore and emit TaskCreated/TaskReady
-        print('[result-router] resume for', evt['payload'].get('task_id'))
-    consumer.commit(m)
+import json
+
+from runtime.common import (
+    Settings,
+    configure_logging,
+    create_consumer,
+    create_producer,
+    get_logger,
+)
+
+logger = get_logger(__name__)
+
+
+def handle_event(event: dict) -> None:
+    if event.get("type") == "ToolCompleted":
+        task_id = event.get("payload", {}).get("task_id")
+        logger.info("Resuming task", extra={"task_id": task_id})
+
+
+def run() -> None:
+    settings = Settings.from_env()
+    settings.validate()
+    configure_logging(settings.service_name, settings.log_level)
+
+    consumer = create_consumer(settings, "result-router", ["tool.events"])
+    producer = create_producer(settings)
+
+    logger.info("Result router started")
+    try:
+        while True:
+            msg = consumer.poll(0.2)
+            if not msg:
+                continue
+            if msg.error():
+                logger.error("Kafka error: %s", msg.error())
+                continue
+            payload = msg.value()
+            if payload is None:
+                logger.warning("Received empty message payload")
+                continue
+            event = json.loads(payload)
+            handle_event(event)
+            consumer.commit(msg)
+    except KeyboardInterrupt:
+        logger.info("Result router shutting down")
+    finally:
+        producer.flush(5)
+        consumer.close()
+
+
+if __name__ == "__main__":
+    run()
